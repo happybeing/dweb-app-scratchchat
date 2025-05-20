@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>dweb ScratchChat</title>
+    <style>
+        /* *{border: 1px solid #fff} */
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #C9E4CA;
+        }
+
+        #container {
+            width: 97%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .top-section,
+        .chat-area,
+        .bottom-section,
+        .description,
+        .footer {
+            width: 97%;
+            box-sizing: border-box;
+            padding: 10px;
+        }
+
+        .top-section {
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+
+        .description {
+            max-width: 800px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+
+        p.description {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .follows-area {
+            padding-top: 0px;
+            justify-content: left;
+        }
+
+        .chat-area {
+            min-height: 200px;
+            padding-top: 0px;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .bottom-section {
+            padding-top: 0;
+            margin-left: 10px;
+            margin-right: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            padding-top: 0px;
+            padding-bottom: 10px;
+            justify-content: center;
+        }
+
+        #my-address {
+            margin-top: 0px;
+            padding-top: 3px;
+            margin-left: 10px;
+            width: 100%;
+            resize: none;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        label {
+            display: inline-block;
+            width: 126px;
+            text-align: right;
+        }
+
+        .follows-list {
+            display: inline-block;
+            width: 250px;
+            text-align: right;
+        }
+
+        table {
+            /* margin-left: auto;
+        margin-right: auto; centres the table */
+            width: 10em;
+            /* or any other specific width */
+            padding-bottom: 15px;
+        }
+
+        input.new-follow {
+            size: 100;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            margin-bottom: 5px;
+        }
+
+        .button {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        #scratchchat-feed {
+            resize: none;
+            border: 1px solid #ccc;
+            background-color: papayawhip;
+            padding: 10px;
+            padding-top: 0px;
+            min-height: 100%;
+            width: 100%;
+            /* Subtract the top and bottom padding from the middle section */
+            height: calc(100% - 20px);
+        }
+
+        .feed-message {
+            padding-top: 20px;
+            display: flex;
+            width: 100%;
+        }
+
+        .msg-avatar-column {
+            flex: 1;
+            width: 40px;
+            padding-top: 2px;
+        }
+
+        .msg-content-column {
+            margin-left: 10px;
+            width: calc(100% - 40px);
+        }
+
+        .msg-content-item {
+            width: 100%;
+        }
+
+        .msg-header-date {
+            font-size: smaller;
+        }
+
+        textarea.chat-input {
+            resize: none;
+            width: 100%;
+            /* calc(100% - 14px); */
+        }
+
+        #preview-avatar {
+            max-height: 23px;
+        }
+
+        .no-symbol {
+            margin-left: 20px;
+            border-radius: 50%; /* Create the circular shape */
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .no-symbolx:after {
+            content: "";
+            border-top: 3px solid red;
+            width: 40px;
+            transform: rotate(45deg);
+            /* transform-origin: 0% 0%; */
+            transform-origin: 1px 1px;
+        }
+
+        .no-symbol-line {
+            content: "";
+            border-top: 3px solid red;
+            width: 40px;
+            transform: rotate(67deg);
+            /* transform-origin: 0% 0%; */
+            transform-origin: 8px 0px;
+        }
+
+        .message-no-symbol {
+            /* margin-left: 30px; */
+            border: 3px solid red;
+            height: 20px;
+            width: 20px;
+        }
+
+        .preview-no-symbol {
+            position: relative;
+            top: 15px;
+            margin-top: 0px;
+            border: 3px solid red;
+            height: 20px;
+            width: 20px;
+        }
+
+        .avatar {
+            overflow: hidden;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .preview-avatar {
+            height: 40px;
+            width: 40px;
+            position: absolute;
+            margin-left: 6px;
+            padding-left: 6px
+        }
+
+        .message-avatar {
+            height: 40px;
+            width: 40px;
+        }
+
+        .avatar-loading {
+            display: inline-block;
+            padding-left: 6px;
+            margin-left: 6px;
+            box-sizing: border-box;
+            animation: rotation 2s linear infinite;
+        }
+
+        .preview-avatar-loading {
+            width: 20px;
+            height: 20px;
+            border: 4px dotted darkorange;
+            border-radius: 50%;
+        }
+
+        .message-avatar-loading {
+            width: 40px;
+            height: 40px;
+            border: 8px dotted darkorange;
+            border-radius: 50%;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #initialising-loader {
+            position: absolute;
+            align-self: center;
+            margin-top: 35%;
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        .scrollable-text {
+            height: 100px;
+            border-radius: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            /* Ensure the text wraps properly */
+            border: 1px solid #ccc;
+            /* A border for visual distinction */
+            padding: 10px;
+            /* Padding inside the div */
+            user-select: none;
+            /* Prevent text selection */
+            cursor: default;
+            /* Change the cursor to a default arrow */
+        }
+
+        .flat-button {
+            border: 1px solid black;
+            border-radius: 10px;
+            background: none;
+            color: black;
+            background-color: papayawhip;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .flat-button:disabled {
+            border: 1px solid grey;
+            pointer-events: none;
+            color: grey;
+        }
+
+</style>
+</head>
+
+<body>
+<div id="container">
+    <div id="initialising-loader"></div>
+    <div class="top-section">
+        <h1><img height="25px" src="http://127.0.0.1:8080/ant-0/data/35cae9297780dcc0fe2d328dd1dc8060ec352eb54cc8192faaf3aedd803c119d"> ScratchChat</h1>
+        <div class="description">
+            <p class="description">ScratchChat is secure anonymous chat hosted entirely on the Autonomi peer-to-peer network.
+                No server, no domains just you and the decentralised network.
+                It is a single file of HTML which uses the dweb REST API to store and update public and private data using
+                "Scratchpads".</p>
+            <p>To use ScratchChat hosted on Autonomi (or the web), first run 'dweb serve' on your PC.</p>
+        </div>
+        Share your ScratchChat address:<textarea title="click to select and Ctrl-C to copy" id="my-address" rows="1" resize="false"
+            onclick="this.focus();this.select()" readonly="readonly">Getting your address...</textarea>
+        <div class="input-group">
+            <h2>My Settings <button id="save-settings-button" disabled="false" class="disable-until-initialised button flat-button"
+                    onclick="saveSettings()">Save Changes</button></h2>
+            <label title="your nickname in the chat" for="nick">Nick:</label>
+            <input title="your nickname in the chat"class="disable-until-initialised" type="text" id="nick" name="nick" placeholder="Enter your nick">
+            <br />
+            <label title="a few words about yourself" for="bio">Bio:</label>
+            <input title="a few words about yourself" class="disable-until-initialised" type="text" id="bio" name="bio" placeholder="A little about you">
+            <br />
+            <div style="display: inline-block; padding-top: 10px;">
+
+                <label title="datamap address of an .png, .svg or .ico file" for="avatar-address">Image:</label>
+                <input title="datamap address of an .png, .svg or .ico file" class="disable-until-initialised" type="text" id="avatar-address" name="avatar-address" placeholder="Enter your avatar address">
+                <span id="preview-avatar"></span>
+            </div>
+        </div>
+
+        <div class="follows-area disable-until-initialised" style="align-content: left;">
+            <h2>My Follows <button id="save-follows-button" disabled="false" class="button flat-button disable-until-initialised"
+                    onclick="saveFollows()">Save Changes</button></h2>
+            <table id="follow-list" style="width: 400px;">
+                <!-- This will be populated by JavaScript -->
+            </table>
+            <form>
+                <input class="disable-until-initialised" type="text" size="50" id="new-follow" autocomplete="off" name="new-follow"
+                    placeholder="Paste a ScratchChat address"> <button id="add-follow-button" disabled="false" class="button flat-button" onclick="addFollow()">Add Follow</button>
+            </form>
+        </div>
+        <h2>ScratchChatter</h2>
+    </div>
+    <div class="chat-area">
+        <div class="scrollable-text" id="scratchchat-feed" placeholder="Getting update...">Updating...</div>
+    </div>
+    <div class="bottom-section">
+        <textarea title="Type some text and press enter to send" class="chat-input disable-until-initialised" type="text" id="chat-input" name="chat-input"
+            placeholder="Type and press enter..."></textarea>
+        <span id="status-message">Updating chat...</span>
+    </div>
+    <div class="footer">
+        <strong>ScratchChat</strong> is a secure peer-to-peer app built using the <strong><a
+                href="https://github.com/happybeing/dweb/tree/main/dweb-cli#web-api">dweb RESTful API</a></strong>
+    </div>
+</div>
+</body>
+
+<script>
+
+    ///////////////////////////////////////////////////////////////////////////
+    // For development we support the following query parameters.
+    //
+    // "person=some-name" - allows different users on the same test network
+    // "reset=true" - does a hard reset of settings and wipes all data
+    // "wipe=true" - erases all public messages (good if you typed a password by mistake!)
+    //
+    const urlParams = new URLSearchParams(window.location.search);
+    const personName = urlParams.get('person');
+    const commandWipeAllMessages = urlParams.get('wipe');
+    // const commandResetScratchpads = urlParams.get('reset');
+
+    console.log("Query Params:");
+    console.log("   person=" + personName);
+    console.log("   wipe=" + commandWipeAllMessages);
+    // console.log("   reset=" + commandResetScratchpads);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // dweb REST API access to Autonomi
+    //
+    let dwebHost = "http://127.0.0.1";
+    let dwebPort = "8080";
+    let antAPI = dwebHost + ":" + dwebPort + "/ant-0";
+
+    let dataAPI = antAPI + "/data/";
+
+    let scratchpadPublicAPI = antAPI + "/scratchpad-public";
+    let scratchpadPrivateAPI = antAPI + "/scratchpad-private";
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Data Structures
+
+    let defaultAvatarAddress = "35cae9297780dcc0fe2d328dd1dc8060ec352eb54cc8192faaf3aedd803c119d";
+    let defaultAvatarUrl = dataAPI + defaultAvatarAddress;
+
+    // Settings held publicly in the app sourcecode
+    //
+    let app_id = "scratchchat/dweb-apps/happybeing/github.com";
+    let statusInterval = 3000;
+
+    // These names are used in the UI (e.g. in status messages) and also
+    // to identify the corresponding Scratchpad objects on Autonomi
+    let settingsName = "private settings";
+    let myChatName = "public chat";
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Feed message input
+
+    // Seconds of inactivity to clear each state
+    const typingThreshold = 10;
+    const activeThreshold = 60*10;
+    const recentThreshold = 60*30;
+
+    let lastCharTime = 0;
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Other initialisation
+    let activityStatusMessage = "";
+    let lastAddedMessageAuthorAddress = ""; // Author of most recently displayed message
+    let lastAddedContentId = null;            // Corresponding id of the displayed content
+
+    function resetLastAddedMessage() {
+        lastAddedMessageAuthorAddress = "";
+        lastAddedContentId = null;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // For Development
+
+    if (personName != undefined && personName != "") {
+        settingsName += " (for " + personName + ")";
+        myChatName += " (for " + personName + ")";
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Scratchpads stored on the network
+
+    // Private settings for the user of the app stored in mySettings
+    let mySettings = new Scratchpad(settingsName, false,
+        {
+            allFollows: [],     // Array of ScratchChatter
+            maxHistory: 100,
+        }
+    );
+
+    // Public chat messages, public follows etc
+    function DefaultScratchChat() {
+        this.claimedAddress = "";
+        this.nick = "your-nick";
+        this.avatar = "35cae9297780dcc0fe2d328dd1dc8060ec352eb54cc8192faaf3aedd803c119d"; //"avatar-address";
+        this.bio = "a few words about yourself";
+        this.publicFollows = [];
+        this.messages = [];
+        this.activityState = "inactive";
+        this.unsavedChanges = false;
+    }
+
+    // My public chat data including my messages, public follows, nick, avatar, bio
+    let myChat = new Scratchpad(myChatName, true, new DefaultScratchChat());
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Chat Management
+    ///////////////////////////////////////////////////////////////////////////
+
+    let activeChatters = []; // Chatters to include in the chat
+
+    // A ScratchChatter object represents a follow, which includes their recent public chat
+    function ScratchChatter(address) {
+
+        // Initial values for UI when adding a new follow
+        newScratchChat = new DefaultScratchChat();
+        newScratchChat.nick = "";
+        newScratchChat.avatar = "";
+        newScratchChat.bio = "";
+
+        this.publicScratchChat = newScratchChat;    // Will be overwritten on load of their ScratchChat
+        this.metadata = {
+            scratchpadCounter: 0,
+            address: address,
+            loadTime: 0,    // A UTC time-stamp for the last update from the network: (new Date()).getTime()
+        };
+    }
+
+    // My Follows
+
+    document.getElementById('new-follow').addEventListener('input', function (event) {
+        let inputValue = document.getElementById('new-follow').value;
+        let buttonState = isScratchChatAddress(inputValue);
+        addFollowButton(buttonState);
+    });
+
+    function isScratchChatAddress(text) {
+        return (text.length == 96);
+    }
+
+    function isImageAddress(text) {
+        return (text.length == 64);
+    }
+
+    function addToFollows(scratchChatter) {
+        event.preventDefault(); // Prevent page reload
+        mySettings.content.allFollows.push(scratchChatter);
+        updateMyFollowsUI();
+        saveFollowsButton(true);
+    }
+
+    function deleteFollow(index) {
+        event.preventDefault(); // Prevent page reload
+        let follows = mySettings.content.allFollows;
+        console.log("deleteFollow(" + index + ") with nick ", follows[index].publicScratchChat.nick);
+
+        if (follows[index].isPublic) {
+            updatePublic = true;
+        } else {
+            updatePublic = false;
+        }
+
+        follows.splice(index, 1);
+        if (updatePublic) { updatePublicFollows(); }
+
+        updateMyFollowsUI();
+        saveFollowsButton(true);
+    }
+
+    function togglePublicFollow(index) {
+        let follows = mySettings.content.allFollows;
+        event.preventDefault(); // Prevent page reload
+        console.log("togglePublicFollow(" + index + ") with nick ", follows[index].publicScratchChat.nick);
+        follows[index].isPublic = !follows[index].isPublic;
+        updatePublicFollows();
+        saveFollowsButton(true);
+    }
+
+    function updateMyFollowsUI() {
+        console.log("updateFollowsList()");
+        let follows = mySettings.content.allFollows;
+
+        console.log("follows[]:");
+        console.log(follows);
+        let followListHTML = '';
+
+        if (follows.length == 0) {
+            followListHTML = "You aren't following any ScratchChatters yet!";
+        }
+
+        for (let i = 0; i < follows.length; i++) {
+            let nick = follows[i].publicScratchChat.nick;
+            if (nick == "") { nick = "loading..."; }
+            let address = follows[i].metadata.address;
+            let abbridged = address.slice(0, 8) + "..";
+            let activity = follows[i].publicScratchChat.activityState;
+            if (activity == "inactive") { activity = ""; }
+            followListHTML += '<tr><td style="text-align: right">'
+                + nick + ': <td/><td style="text-align: right"><span  title="'
+                + address + '">'
+                + abbridged + '</span><td/><td><button class="button flat-button" onclick="deleteFollow(\''
+                + i + '\')">Unfollow</button>&nbsp;<input title="allow others to see you follow this person" type=checkbox id="public'
+                + i + '" onchange="togglePublicFollow(\'' + i + '\')"><span title="allow others to see you follow this person">public</span></input>&nbsp; '
+                + activity + '</td></tr>';
+        }
+        document.getElementById('follow-list').innerHTML = followListHTML;
+        if (event != null) { event.preventDefault(); } // Prevent page reload
+    }
+
+    function updatePublicFollows() {
+        // Regenerate the list of public follows
+        publicFollows = [];
+        let allFollows = mySettings.content.allFollows;
+
+        for (let i = 0; i < allFollows.length; i++) {
+            if (allFollows[i].isPublic) {
+                publicFollows.push(allFollows[i]);
+            }
+        }
+        myChat.content.publicFollows = publicFollows;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Start Up
+    ///////////////////////////////////////////////////////////////////////////
+
+    console.log("PAGE load");
+    enableByClass("disable-until-initialised", false);
+
+    document.addEventListener("DOMContentLoaded", async function (event) {
+        console.log("domLoaded()...");
+
+        updateMyFollowsUI();
+        await initialise();
+        document.getElementById("initialising-loader").style.visibility = "hidden";
+        enableByClass("disable-until-initialised", true);
+        saveSettingsButton(false);
+        saveFollowsButton(false)
+
+        let defaults = new DefaultScratchChat();
+        let extraText = ".. now get typing!";
+        if (myChat.content.nick == defaults.nick) {
+            extraText = ".. now give yourself a 'nick' and then press 'Save' under My Settings";
+        } else if (myChat.content.bio == defaults.bio ) {
+            extraText = ".. don't forget to add a 'bio' so people know who you are";
+        } else if (mySettings.content.allFollows.length == 0) {
+            extraText = ".. you need to add someone under My Follows";
+        }
+
+        if (mySettings.content.allFollows.length > 0) {
+            setStatusMessage("Initialising... getting messages from " + mySettings.content.allFollows.length + " people you follow...");
+            await pollMyFollows(false);
+        }
+
+        await updateFeed();
+        setStatusMessage("Initialisation complete" + extraText);
+        if (extraText != "") {
+            setStatusMessageProminance("blue");
+        }
+
+        document.getElementById('nick').addEventListener('input', async function (event) {
+            saveSettingsButton(true);
+        });
+
+        document.getElementById('avatar-address').addEventListener('input', async function (event) {
+            saveSettingsButton(true);
+            lazyInsertImageHTML("preview-avatar", document.getElementById('avatar-address').value, avatarImageSpec, "preview");
+        });
+
+        document.getElementById('bio').addEventListener('input', async function (event) {
+            saveSettingsButton(true);
+        });
+
+    });
+
+    async function initialise() {
+        let haveMySettings = false;
+        let haveMyChat = false;
+
+        // TODO get scratchpads in parallel
+        while (true) {
+            if (!haveMySettings) {
+                setStatusMessage("Initialising..." + mySettings.metadata.name);
+                haveMySettings = await getOrCreateScratchpad(mySettings);
+                resetAllFollowsForFirstUpdate();
+                updateUIwithMySettings();
+            }
+            if (!haveMyChat) {
+                setStatusMessage("Initialising..." + myChat.metadata.name);
+                haveMyChat = await getOrCreateScratchpad(myChat);
+                if (commandWipeAllMessages) {
+                    wipeAllMessages();
+                }
+
+                updateUIwithMyChat();
+            }
+            if (haveMySettings && haveMyChat) {
+                break;
+            }
+
+            let message = "Initialising... FAILED to get ";
+            if (!haveMySettings) {
+                message += mySettings.metadata.name;
+                if (!haveMyChat) {
+                    message += "or "
+                }
+            }
+            if (!haveMyChat) {
+                message += myChat.metadata.name;
+            }
+            message += " will try again shortly...";
+
+            setStatusMessage(message);
+            delay(5000);
+        }
+
+        await saveScratchpadsTimer();
+        await pollFollowsTimer();
+    }
+
+    // Reset the scratchpad counter of each follow to trigger update on first load
+    function resetAllFollowsForFirstUpdate(){
+        mySettings.content.allFollows.forEach(follow => {
+            follow.metadata.scratchpadCounter = 0;
+        });
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Erasure and Reset
+    //
+    // TODO - provide UI (currenly these are controlled with query parameters)
+    ///////////////////////////////////////////////////////////////////////////
+
+    // TODO provide a function and UI to delete/edit a message
+
+    async function wipeAllMessages() {
+        myChat.content.messages = [];
+        myChat.unsavedChanges = true;
+        await saveScratchpads();
+        updateFeed();
+    }
+
+    // TODO -  maybe implement reset but...
+    // I had some very strange behaviour (see notes in earlier index.html
+    // Consider flattening myChat by replacing sub-objects
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Save Scratchpads on a Timer
+    ///////////////////////////////////////////////////////////////////////////
+
+    var saveTimerInterval = 5000;
+    let isStoringPublic = false;
+    let isStoringPrivate = false;
+
+    async function saveScratchpadsTimer() {
+        console.log("saveScratchpadsTimer()");
+        await saveScratchpads();
+        setTimeout(saveScratchpadsTimer, saveTimerInterval);
+    }
+
+    async function saveScratchpads() {
+        console.log("saveScratchpads()");
+        let activityState = updateActivity(false, (new Date().getTime()));
+        console.log("myChat.content.activityState: " + myChat.content.activityState);
+        if (activityState != myChat.content.activityState) {
+            myChat.content.activityState = activityState;
+            myChat.unsavedChanges = true;
+        }
+
+        if (!isStoringPublic && myChat.unsavedChanges) {
+            setStatusMessage("Saving changes to public Scratchat...")
+            isStoringPublic = true;
+            clearTagsOnMessages(myChat.content.messages);
+            storeScratchpad(myChat).then(result => {
+                myChat.unsavedChanges = false;
+                isStoringPublic = false;
+            })
+            clearStatusMessage();
+        }
+
+        if (!isStoringPrivate && mySettings.unsavedChanges) {
+            setStatusMessage("Saving changes to private Scratchat...")
+            isStoringPrivate = true;
+            storeScratchpad(mySettings).then(result => {
+                mySettings.unsavedChanges = false;
+                isStoringPrivate = false;
+            })
+            clearStatusMessage();
+        }
+    }
+
+    async function getOrCreateScratchpad(scratchpadObject) {
+
+        if (!await loadScratchpadByName(scratchpadObject)) {
+            if (scratchpadObject.metadata.existsOnNetwork) {
+                setStatusMessage("Unable to load " + scratchpadObject.metadata.name + " possibly due to network problems");
+                return false;
+            }
+
+            setStatusMessage("Creating a new scratchpad...");
+            if (!await createScratchpad(scratchpadObject)) {
+                setStatusMessage("ERROR: unable to create scratchpad for " + scratchpadObject.metadata.name);
+                return false;
+            }
+        } else {
+            updateMyFollowsUI();
+        }
+
+        clearStatusMessage();
+        return true;
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Poll the Scratchpads I follow on a timer
+    ///////////////////////////////////////////////////////////////////////////
+
+    var pollTimerInterval = 4899;
+
+    let pollingInProgress = false;
+
+    async function pollFollowsTimer() {
+        console.log("pollFollowsTimer()");
+        if (pollingInProgress) {
+            console.log("...polling already active");
+            setTimeout(saveScratchpadsTimer, pollTimerInterval);
+        }
+
+        pollingInProgress = true;
+        setStatusMessage("Polling my follows...");
+        await pollMyFollows(true);
+        clearStatusMessage();
+        updateActivityInStatusMessage();
+        pollingInProgress = false;
+        setTimeout(pollFollowsTimer, pollTimerInterval);
+    }
+
+    // For now just poll them all in sequence
+    // Returns true if any scratchpad was updated
+    // TODO: maybe prioritise polling according to recent activity, time since last poll success, time since last poll failure
+    async function pollMyFollows(withFeedUpdates) {
+        console.log("pollMyFollows()...");
+        let newData = false;
+        mySettings.content.allFollows.forEach(async follow => {
+            if (await pollFollow(follow, withFeedUpdates)) {
+                newData = true;
+            }
+        });
+        return newData;
+    }
+
+    // Return true if follow data updated
+    async function pollFollow(follow, withFeedUpdates) {
+        let address = follow.metadata.address;
+        let abbridged = address.slice(0, 8) + "..";
+        let scratchpad = new Scratchpad("unknown", true, new DefaultScratchChat());
+
+        console.log("pollFollow() loading scratchpad: " + abbridged);
+
+        let newData = false;
+        loadScratchpadByAddress(scratchpad, address).then(async success => {
+            let timeStamp = (new Date()).getTime();
+            if (success) {
+                console.log("pollFollow() load scratchpad SUCCESS: " + abbridged);
+                scratchpad.metadata.lastPollSuccess = timeStamp;
+                follow.metadata.loadTime = timeStamp;
+                follow.publicScratchChat = scratchpad.content;
+                console.log("last counter v current counter: "
+                    + follow.metadata.scratchpadCounter + " <> " + scratchpad.dwebScratchpad.counter);
+                if (follow.metadata.scratchpadCounter == undefined ||
+                    follow.metadata.scratchpadCounter < scratchpad.dwebScratchpad.counter) {
+                    console.log("updating feed...");
+                    updateMyFollowsUI();
+                    if (withFeedUpdates) {
+                        await updateFeed();
+                    }
+                    newData = true;
+                }
+                follow.metadata.scratchpadCounter = scratchpad.dwebScratchpad.counter;
+            } else {
+                console.log("pollFollow() load scratchpad FAILED: " + abbridged);
+                scratchpad.metadata.lastPollFailure = timeStamp;
+            }
+        })
+
+        return newData;
+    }
+
+    async function updateFeed() {
+        console.log("updateFeed()");
+
+        // Create a list of all messages, each tagged with authorNick and authorAddress
+        let taggedMessages = tagMessagesForFeed(myChat.content, myChat.metadata.scratchpadAddress);
+
+        // For my follows, tag with the follow itself
+        console.log("mySettings.content: ");
+        console.log(mySettings.content);
+        mySettings.content.allFollows.forEach(follow => {
+            console.log("Adding messages for follow: " + follow.publicScratchChat.nick);
+            taggedMessages = taggedMessages.concat(tagMessagesForFeed(follow.publicScratchChat, follow.metadata.address));
+        });
+
+        // console.log("taggedMessages:");
+        // console.log(taggedMessages);
+
+        let sorted = taggedMessages.sort((a, b) => a.timeStamp - b.timeStamp);
+        console.log("taggedMessage (sorted):");
+        console.log(sorted);
+
+        // Convert to text and apply to message feed
+        let feedContent = "";
+        let chatArea = document.getElementById('scratchchat-feed');
+        let precedingMessage = null;
+        chatArea.innerHTML = "";
+
+        resetLastAddedMessage();
+        await sorted.forEach(async message => {
+            console.log("ADDING MESSAGE: " + message.type + ": " + message.messageText);
+            let avatarAddress = message.authorAvatar;
+            let avatarElementId = makeMessageAvatarElementId(message.messageId);
+
+            let contentOnly = (lastAddedMessageAuthorAddress == message.authorAddress && document.getElementById(lastAddedContentId) != null);
+            if (contentOnly) {
+                console.log("lastAddedContentId: " + lastAddedContentId);
+                document.getElementById(lastAddedContentId).innerHTML += "<br/>" + message.messageText;
+            } else {
+                let tuple = makeMessageHTML(contentOnly, message.messageId, avatarElementId, message, message.authorAddress, message.authorNick, message.timeStamp);
+                chatArea.innerHTML += tuple[0];
+                lastAddedContentId = tuple[1];
+                console.log("lazy INSERTED before lazyInsert for ID: " + avatarElementId);
+                console.log("lazy INDERTED HTML: " + tuple[0])
+            }
+            lastAddedMessageAuthorAddress = message.authorAddress;
+
+            // Remove tag to prevent memory leakage
+            message.authorPublicScratchChat = null;
+            console.log("CALL lazyInsert for ID: " + avatarElementId)
+            lazyInsertImageHTML(avatarElementId, avatarAddress,  avatarImageSpec, "message").then(result => {
+                console.log("lazyInsertImageHTML() promise resolved for id: " + avatarElementId);
+            });
+            precedingMessage = message;
+        })
+
+        console.log("FEED CONTENT: " + feedContent);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // Returns a copy of all messages loaded for this follow, tagged with metadata needed for use making the HTML for a message
+    function tagMessagesForFeed(authorPublicScratchChat, authorAddress) {
+        console.log("tagMessagesForFeed() authorPublicScratchChat: " + authorPublicScratchChat);
+        console.log(authorPublicScratchChat);
+        authorPublicScratchChat.messages.forEach(message => {
+            // Give access to metadata about the follow when generating the feed
+            message.authorAddress = authorAddress;
+            message.authorNick = authorPublicScratchChat.nick;
+            message.authorAvatar = authorPublicScratchChat.avatar;
+
+            if (message.messageText == undefined) {
+                message.messageText = message.message;
+                delete message.message;
+            }
+        })
+        console.log("RETURNING messages: ");
+        console.log(authorPublicScratchChat.messages);
+        return authorPublicScratchChat.messages;
+    }
+
+    // Returns a copy of all messages reversing the effect of tagMessageForFeed()
+    function clearTagsOnMessages(messages) {
+        console.log("clearTagsOnMessages()");
+        messages.forEach(message => {
+            delete message.authorAddress;
+            delete message.authorNick;
+            delete message.authorAvatar;
+        })
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Image Handling
+    ///////////////////////////////////////////////////////////////////////////
+
+    async function updateAvatarForFollow(followIndex) {
+        console.log("TODO implement updateAvatarForFollow()")
+    }
+
+    // An image is identified by its datamap address on Autonomi and
+    // will show a default representation until the data can be fetched
+    let knownImages = [];
+
+    function Image(address) {
+        this.address = address;
+        this.fetchPromise = null;           // Set by fetchImage()
+        this.lastFetchCompleted = 0;        // A timeStamp
+        this.lastFetchResult = null;        // Invalid until lastFetchCompleted != 0
+        this.imageSize = 0;                 // Non-zero after successful fetch
+    }
+
+    // ImageSpec holds basic properties for each type of image use
+    function ImageSpec(maxBytes, imageBaseStyle) {
+        this.maxBytes = maxBytes;
+        this.imageBaseStyle = imageBaseStyle;
+    }
+
+    let avatarImageSpec = new ImageSpec(100*1024, "avatar");
+    let messageAvatarImageSpec = new ImageSpec(100*1024, "avatar");
+    let messageEmbeddedImageSpec = new ImageSpec(1000*1024, "message-image");
+
+    // For preview - generate HTML and insert into #preview-avatar
+    //
+    // - #preview-avatar element container for an element + class that corresponds to one of:
+    //  - <img> with class: avatar + preview-avatar + avatar-<ADDRESS>
+    //  - <img> with class: avatar + preview-avatar-loading + avatar-<ADDRESS>
+    //  - <div> with class: no-symbol and preview-no-symbol + avatar-<ADDRESS>
+
+    // For message feed - do everything using classes
+    //
+    // - feed-message class is the message container, which has a column for each of avatar and message content
+    //    - the avatar column contains a <span> tag with HTML which is updated when an image fetch completes
+    //      - <img> with class: avatar + message-avatar-loading + avatar-<ADDRESS>
+    //      - <img> with class: avatar + message-avatar + avatar-<ADDRESS>
+    //      - <div> with class: no-symbol and message-no-symbol + avatar-<ADDRESS>
+    //    - the content column has a header, followed by one or more message-content-item <div>
+
+    // PLAN:
+    // new Image(address):
+    //      - holds a Promise which attempts to fetch the image and updates the HTML on completion
+    //
+    // async lazyInsertImageHTML(elementId, avatar, avatarElementType) is used to create a new image
+    // that will attempt fetch() and update on completion
+    //
+    // makeImageHTML() - creates HTML based on the state of an Image
+    // async fetchImage(image) - returns a queriable Promise that is held in an Image
+    //
+
+    async function lookUpOrCreateImage(imageAddress) {
+        let image = await knownImages.find(image => image.address === imageAddress);
+        console.log("lookUpOrCreateImage() find returned image:");
+        console.log(image);
+        if (image == undefined) {
+            image = await fetchImage(imageAddress);
+        }
+
+        console.log("lookUpOrCreateImage() created new image with promise:");
+        console.log(image);
+
+        return image;
+    }
+
+    // Handle display of image by inserting initial HTML and updating
+    // with the result of a fetch if that is needed
+    async function lazyInsertImageHTML(elementId, imageAddress, imageSpec, imageStyle) {
+        console.log("lazyInsertImageHTML() elementId: " + elementId);
+        if (document.getElementById(elementId) == null) {
+            console.log("DEBUG: lazyInsertImageHTML() elementId not valid - unable to insert image HTML for "
+            + imageAddress.slice(0 - 8) + ".. ()" + imageSpec + "/" + imageStyle + ")");
+
+            return false;
+        }
+
+        let image = await lookUpOrCreateImage(imageAddress);
+        document.getElementById(elementId).innerHTML = makeImageHTML(image, imageSpec, imageStyle);
+
+        if (image.fetchPromise == null) {
+            // No promise (e.g. when address wasn't valid there is no fetch)
+            document.getElementById(elementId).innerHTML = makeImageHTML(image, imageSpec, imageStyle);
+        } else if (image.fetchPromise.isFulfilled) {
+            // If still fetching the image, update the HTML when that completes
+            image.fetchPromise.then(_ => {
+                if (document.getElementById(elementId) != null) {
+                    document.getElementById(elementId).innerHTML = makeImageHTML(image, imageSpec, imageStyle);
+                } else {
+                    console.log("DEBUG: lazyInsertImageHTML() promise isFullfilled but elementId not valid - unable to insert image HTML for "
+                    + imageAddress.slice(0 - 8) + ".. ()" + imageSpec + "/" + imageStyle + ")");
+                }
+            });
+        }
+
+        return true;
+    }
+
+    // Determine how to display the image and generates HTML without waiting
+    //
+    // If image is null, renders the "no-symbol" for an invalid address
+    // If fetch completed but failed renders the "no-symbol"
+    // If the fetch succeeded and:
+    //      too large (in bytes) - renders the "no-symbol" for an invalid image
+    //      size ok - renders the image
+    // If a fetch has not completed, renders the "loading" spinner
+    //
+    // imageBaseStyle is a class of images such as "avatar" or "message"
+    // imageStyle is like a subclass, usually sizing such as "preview" or "message"
+    //
+    // TODO if a fetch has failed, this function could kick off a retry after a delay (but probably the user will just refresh)
+    function makeImageHTML(image, imageSpec, imageStyle) {
+        if (image == null) {
+            return makeNoSymbolHTML(image, imageStyle, imageSpec.imageBaseStyle, "invalid image address");
+        }
+
+        // An image may have been fetched successfully, failed a fetch or be being fetched
+        // and each will be displayed slightly differently (i.e. with different graphic or
+        // 'title' property) depending on the outcome of any commpleted fetch
+
+        if (image.lastFetchCompleted != 0) {
+            // A fetch has completed
+            if (!image.lastFetchResult) {
+                return makeNoSymbolHTML(image, imageStyle, imageSpec.imageBaseStyle, "image failed to load")
+            }
+            if (image.imageSize > image.maxBytes) {
+                let title = "image is " + image.imageSize + " bytes which is larger than the "
+                + image.maxBytes + "allowed for an " + imageBaseStyle + " image";
+                return makeNoSymbolHTML(image, imageStyle, imageSpec.imageBaseStyle, title);
+            }
+            return makeImageTagHTML(image, imageStyle, imageSpec.imageBaseStyle, "");
+        }
+
+        if (image.fetchPromise != null && image.fetchPromise.isPending) {
+            return makeLoadingSpinnerHTML(image, imageStyle, imageSpec.imageBaseStyle);
+        }
+
+        // This is a bug!
+        return makeNoSymbolHTML(image, imageStyle, imageSpec.imageBaseStyle, "THIS IS A BUG");
+    }
+
+    function makeNoSymbolHTML(image, imageStyle, imageBaseStyle, title) {
+        return '<div class="no-symbol no-symbol-line ' + imageStyle + '-no-symbol"' + 'title="No avatar available"><div class="no-symbol-line"></div></div>'
+    }
+
+    function makeImageTagHTML(image, imageStyle, imageBaseStyle, title) {
+        let imageURL = dataAPI + image.address;
+        return '<img class="' + imageBaseStyle + ' ' + imageStyle + '-' + imageBaseStyle  + '" title="' + title + '" src="' + imageURL + '">';
+    }
+
+    function makeLoadingSpinnerHTML(image, imageStyle, imageBaseStyle, title) {
+        return '<div class="avatar-loading ' + imageStyle + '-' + imageBaseStyle + '-loading">';
+    }
+
+    // Attempts to get the image and if successful, updates the image metadata
+    // Returns a Promise which resolves to true on success (or otherwise false)
+    async function fetchImage(imageAddress) {
+        console.log("fetchImage(" + imageAddress + ")");
+
+        let image = new Image(imageAddress);
+
+        if (!isImageAddress(imageAddress)) {  // TODO should this be done earlier by the caller?
+            console.log("fetchImage() invalid address: " + imageAddress);
+            return image;
+        }
+
+        console.log("GET " + imageAddress);
+        let promise = fetch(dataAPI + imageAddress, {
+            method: 'GET',
+            headers: {
+                'Accept': '*/*'
+            }
+        }).then(response => {
+            image.lastFetchCompleted = (new Date()).getTime();
+            console.log("fetchImage(" + imageAddress + ") returning " + response.ok);
+            if (response.ok) {
+                image.lastFetchResult = true;
+                image.imageSize = response.arrayBuffer().byteLength;
+            } else {
+                image.lastFetchResult = false;
+                image.imageSize = 0;
+            }
+        });
+
+        image.fetchPromise = MakeQuerablePromise(promise);
+        return image;
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // My Settings
+    ///////////////////////////////////////////////////////////////////////////
+
+    // MyChat.content.activityState has these states:
+    //  "inactive" - initial state / no recent activity
+    //  "recent" - around not too long ago
+    //  "active" - active very recently
+    //  "typing" - typing in the past minute
+
+    // Called on every character
+    function updateActivity(isKeypress, timeStamp) {
+        if (lastCharTime < 1) {
+            lastCharTime = timeStamp - recentThreshold*1000 - 1000;
+            return "inactive";
+        }
+
+        let activity = "typing";
+        let elapsedChar = (timeStamp - lastCharTime) / 1000;
+        if (isKeypress) {
+            lastCharTime = timeStamp;
+        }
+
+        if (elapsedChar > typingThreshold) {
+            activity = "active";
+            if (elapsedChar > activeThreshold) {
+                activity = "recent";
+                if (elapsedChar > recentThreshold) {
+                    activity = "inactive";
+                }
+            }
+        }
+
+        return activity;
+    }
+
+    // Scan follows and update
+    function updateActivityInStatusMessage() {
+        console.log("updateActivityInStatusMessage()");
+
+        let activeTypers = "";
+        let activeCount = 0;
+        mySettings.content.allFollows.forEach(follow => {
+            if (follow.publicScratchChat.activityState == "typing") {
+                if (activeCount > 0) {
+                    activeTypers += ", " + follow.publicScratchChat.nick;
+                } else {
+                    activeTypers = follow.publicScratchChat.nick;
+                }
+                activeCount += 1;
+            }
+        })
+
+        if (activeCount == 0) {
+            clearActivityMessage();
+        } else if (activeCount == 1) {
+            setActivityMessage(activeTypers + " is typing...");
+        } else {
+            setActivityMessage(activeTypers + " are typing...");
+        }
+        clearStatusMessage();
+    }
+
+    document.getElementById('chat-input').addEventListener('keypress', async function (event) {
+        let timeStamp = (new Date()).getTime();
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Ignore the Enter
+            let chatInput = document.getElementById('chat-input');
+            let authorPublicScratchChat = myChat.content;
+            let tuple = await addChatMessage(authorPublicScratchChat.avatar, chatInput.value, timeStamp, "normal", "");
+            let avatarElementId = tuple[1];
+
+            lazyInsertImageHTML(avatarElementId, authorPublicScratchChat.avatar, messageAvatarImageSpec, "message");
+
+            chatInput.value = "";
+            myChat.unsavedChanges = true;
+        }
+
+        let activityState = updateActivity(true, timeStamp);
+        if (activityState != myChat.content.activityState) {
+            myChat.content.activityState = activityState;
+            myChat.unsavedChanges = true;
+        }
+    });
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Chat Functionality
+    ///////////////////////////////////////////////////////////////////////////
+
+    function ChatMessage(messageText, authorAddress, timeStamp, messageType, replyTo) {
+        this.messageText = messageText;
+        this.timeStamp = timeStamp;
+        this.authorAddress = authorAddress;
+        this.messageId = makeMessageId(authorAddress, timeStamp);
+        // Allowed types:
+        //  "normal"
+        //  "reply"
+        this.type = messageType;
+        this.replyTo = replyTo;    // the messageId being replied to (may not exist in my chat if I don't follow the author of the reply)
+    }
+
+    function makeMessageId(authorAddress, timeStamp) {
+        return "msg-" + authorAddress.slice(0, 8) + "-" + timeStamp;
+    }
+
+    function makeMessageAvatarElementId(messageId) {
+        return "avatar-" + messageId;
+    };
+
+    // Creates a new message and adds it to your public messages and chat feed
+    // Returns a tuple where
+    //  [0] is the new ChatMessage
+    //  [1] is the avatarElementId for the message
+    async function addChatMessage(avatarAddress, messageText, timeStamp, messageType, replyTo) {
+        let chatArea = document.getElementById('scratchchat-feed');
+        console.log(chatArea);
+
+        let authorAddress = mySettings.metadata.scratchpadAddress;
+        let message = new ChatMessage(messageText, authorAddress, timeStamp, messageType, replyTo);
+        let avatarElementId = makeMessageAvatarElementId(message.messageId);
+
+        let contentOnly = (lastAddedMessageAuthorAddress == message.authorAddress);
+        if (contentOnly) {
+            console.log("lastAddedContentId: " + lastAddedContentId);
+            document.getElementById(lastAddedContentId).innerHTML += "<br/>" + message.messageText;
+        } else {
+            let tuple = makeMessageHTML(contentOnly, message.messageId, avatarElementId, message, message.authorAddress, myChat.content.nick, message.timeStamp);
+            chatArea.innerHTML += tuple[0];
+            lastAddedContentId = tuple[1];
+        }
+
+        chatArea.scrollTop = chatArea.scrollHeight;
+        lastAddedMessageAuthorAddress = authorAddress;
+
+        myChat.content.messages.push(message);
+        if (myChat.content.messages.length > mySettings.content.maxHistory) {
+            myChat.content.messages.shift();
+        }
+
+        console.log("ADD CHAT MESSAGE MY MESSAGES:");
+        console.log(myChat.content.messages);
+        return Object.freeze([message, avatarElementId, authorAddress]);
+    }
+
+    // Returns a tuple where
+    //  [0] is the HTML
+    //  [1] is the id of the content column
+    // Note: before calling makeMessageHTML() the message must be tagged with its author as "follow"
+    function makeMessageHTML(contentOnly, messageId, avatarElementId, message, authorAddress, authorNick, timeStamp) {
+        console.log("makeMessageHTML() contentOnly, authorAddress: " +contentOnly + ", " + authorAddress);
+
+        let dateString = dateStringFromTimeStamp(timeStamp);
+        let tooltip = authorAddress;
+        let content = message.messageText; //'<span>' + message.message + '</span>';
+
+        let avatarElement = "";
+        let contentHeading = "";
+        let contentColumnId = messageId + "-column";
+        if (!contentOnly) {
+            avatarElement = '<span id="' + avatarElementId + '"></span>';
+
+            let headerDate = '<span class="msg-header-date">' + dateString + '</span>';
+            contentHeading = '<div class="msg-content-item"><strong>' + authorNick + "</strong>  " + headerDate + '</div>'
+        }
+
+        let avatarColumn = '<div class="msg-avatar-column">' + avatarElement + '</div>';
+        let contentColumn = '<div id="' + contentColumnId + '" class="msg-content-column">' + contentHeading + content + '</div>';
+
+        let messageHTML = '<div class="feed-message">' + avatarColumn + contentColumn + '</div>';
+
+        return Object.freeze([messageHTML, contentColumnId]);
+    }
+
+    function dateStringFromTimeStamp(timeStamp) {
+        date = new Date(timeStamp);
+        return "" + padTime(date.getDate()) + "/"
+        + padTime((date.getMonth() + 1)) + "/"
+        + date.getFullYear() + " "
+        + padTime(date.getHours()) + ":"
+        + padTime(date.getMinutes());
+    }
+
+    function padTime(time) {
+        if (time < 10) {
+            return "0" + time;
+        } else {
+            return "" + time;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // dweb REST API access to Autonomi
+    ///////////////////////////////////////////////////////////////////////////
+
+    // Creates a JSON Scratchpad object for public or private data
+    //
+    // Contains metadata with details of the Scratchpad and
+    // the raw Scratchpad as a JSON object as last read or
+    // written from/to the network
+    function Scratchpad(name, isPublic, contentObject) {
+        let scratchpadEncoding = 0; // 0 lets this be set by the dweb API when the Scratchpad is created
+        let dwebType;
+
+        if (isPublic) {
+            dwebType = "PublicScratchpad";
+        } else {
+            dwebType = "PrivateScratchpad";
+        }
+
+        // JSON object stored on the network in a Scratchpad
+        this.content = contentObject,
+
+            // Information about the Scratchpad and the JSON content it holds
+            this.metadata = {
+                "name": name,
+                "isPublic": isPublic,
+                "existsOnNetwork": false,   // false until first load or successful create
+                "scratchpadAddress": "unknown",
+            };
+
+        // The most recently read/written JSON representation
+        // of the DwebScratchpad used by the dweb REST API
+        this.dwebScratchpad = {
+            "counter": 0,
+            "data_encoding": scratchpadEncoding,
+            "dweb_type": dwebType,
+            "encryped_data": [
+                0
+            ],
+            "scratchpad_address": "",
+            "unencrypted_data": [
+                0
+            ]
+        };
+    }
+
+    // Create a Scratchpad on the network
+    //
+    // Return true on success
+    async function createScratchpad(scratchpadObject) {
+        console.log("createScratchpad()");
+        let scratchpad = scratchpadObject.metadata;
+
+        scratchpadObject.dwebScratchpad.unencrypted_data = jsonToByteArray(JSON.stringify(scratchpadObject.content));
+        console.log("scratchpad: ");
+        console.log(scratchpad);
+
+        let URL = scratchpadURL(scratchpad);
+        const response = await fetch(URL, {
+            method: 'POST',
+            body: JSON.stringify(scratchpadObject.dwebScratchpad),
+            headers: {
+                'Ant-App-ID': app_id,
+                'Ant-Object-Name': scratchpad.name,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        let json = "";
+        if (response.ok) {
+            json = await response.json();
+            scratchpadObject.scratchpad = json;
+            scratchpadObject.metadata.scratchpadAddress = json.network_address;
+            scratchpadObject.metadata.existsOnNetwork = true;
+        }
+
+        console.log(URL + " POST returned ", response.ok + " ");
+        console.log(json);
+        return response.ok;
+    }
+
+    // Return true on success
+    async function storeScratchpad(scratchpadObject) {
+        console.log("storeScratchpad() for...");
+        console.log(scratchpadObject);
+        let scratchpad = scratchpadObject.metadata;
+
+        scratchpadObject.dwebScratchpad.counter = scratchpadObject.dwebScratchpad.counter + 1;
+        scratchpadObject.dwebScratchpad.unencrypted_data = jsonToByteArray(JSON.stringify(scratchpadObject.content));
+        console.log("scratchpad: ");
+        console.log(scratchpad);
+
+        let URL = scratchpadURL(scratchpad);
+        const response = await fetch(URL, {
+            method: 'PUT',
+            body: JSON.stringify(scratchpadObject.dwebScratchpad),
+            headers: {
+                'Ant-App-ID': app_id,
+                'Ant-Object-Name': scratchpad.name,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        let json = "";
+        if (response.ok) {
+            json = await response.json();
+            scratchpadObject.metadata.existsOnNetwork = true;
+        }
+
+        console.log(URL + " GET returned ", response.ok + " ");
+        console.log(json);
+        return response.ok;
+    }
+
+    // Get a named scratchpad from Autonomi as a JSON object and assign it to
+    // scratchpadObject.content
+    //
+    // The scratchpadObject.metadata contains the details needed to obtain
+    // the content from the network.
+    //
+    // Uses the dweb REST API for Autonomi to get either a PublicScratchpad
+    // or a PrivateScratchpad, handling any decyption for the latter.
+    //
+    // Return true on success
+    async function loadScratchpadByName(scratchpadObject) {
+        console.log("loadScratchpadByName(): " + scratchpadObject.metadata.name);
+
+        console.log("scratchpadObject.metadata: ");
+        console.log(scratchpadObject.metadata);
+
+        let URL = scratchpadURL(scratchpadObject.metadata);
+
+        let json = "";
+        const response = await (fetch(URL, {
+            method: 'GET',
+            headers: {
+                'Ant-App-ID': app_id,
+                'Ant-Object-Name': scratchpadObject.metadata.name,
+                'Accept': 'application/json'
+            }
+        }).catch(error => {
+            console.log("fetch(" + URL + ") failed: " + error);
+            return false;
+        }));
+
+        console.log(URL + " GET returned ", response.ok + " ");
+
+        if (response.ok) {
+            json = await response.json();
+            console.log("response.json():");
+            console.log(json);
+
+            scratchpadObject.content = byteArrayToJson(json.unencrypted_data);
+            scratchpadObject.dwebScratchpad = json;
+            scratchpadObject.metadata.scratchpadAddress = json.scratchpad_address;
+            scratchpadObject.metadata.existsOnNetwork = true;
+            console.log("scratchpadObject:");
+            console.log(scratchpadObject);
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    function scratchpadURL(scratchpad) {
+        if (scratchpad.isPublic) {
+            return scratchpadPublicAPI;
+        } else {
+            return scratchpadPrivateAPI;
+        }
+    }
+
+    // Get a scratchpad at an address from Autonomi as a JSON object and
+    // assign it to scratchpadObject.content
+    //
+    // The scratchpadObject.metadata contains some details needed to obtain
+    // the content from the network.
+    //
+    // Uses the dweb REST API for Autonomi to get either a PublicScratchpad
+    // or a PrivateScratchpad. If we own the scratchpad, it also handles
+    // decyption for the latter.
+    //
+    // Return true on success
+    async function loadScratchpadByAddress(scratchpadObject, address) {
+        console.log("loadScratchpadByAddress(): " + address.slice(0,8) + "..");
+        console.log("scratchpadObject.metadata: ");
+        console.log(scratchpadObject.metadata);
+
+        let URL = scratchpadURL(scratchpadObject.metadata) + '/' + address;
+
+        let json = "";
+        const response = await (fetch(URL, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        }).catch(error => {
+            console.log("fetch(" + URL + ") failed: " + error);
+            return false;
+        }));
+
+        console.log(URL + " GET returned ", response.ok + " ");
+
+        if (response.ok) {
+            json = await response.json();
+            console.log("response.json():");
+            console.log(json);
+
+            scratchpadObject.content = byteArrayToJson(json.unencrypted_data);
+            scratchpadObject.dwebScratchpad = json;
+            scratchpadObject.metadata.scratchpadAddress = json.scratchpad_address;
+            scratchpadObject.metadata.existsOnNetwork = true;
+            console.log("scratchpadObject:");
+            console.log(scratchpadObject);
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // dweb REST API helpers
+    ///////////////////////////////////////////////////////////////////////////
+
+    function byteArrayToJson(byteArray) {
+        let jsonString = Array.from(byteArray).map(byte => String.fromCharCode(byte)).join('');
+        let json = JSON.parse(jsonString);
+        console.log("byteArrayToJson() returning: " + json);
+        return json;
+    }
+
+    function jsonToByteArray(json) {
+        let byteArray = [];
+
+        for (var i in json)
+            byteArray.push(json[i].charCodeAt(0));
+
+        return byteArray;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // UI Management
+    ///////////////////////////////////////////////////////////////////////////
+
+    function updateUIwithMyChat() {
+        document.getElementById('nick').value = myChat.content.nick;
+        document.getElementById('avatar-address').value = myChat.content.avatar;
+        document.getElementById('bio').value = myChat.content.bio;
+
+        // Show my address in the UI
+        setMyAddress(myChat.metadata.scratchpadAddress);
+
+        lazyInsertImageHTML("preview-avatar", document.getElementById('avatar-address').value, avatarImageSpec, "preview");
+    }
+
+    function updateUIwithMySettings() {
+        lazyInsertImageHTML("preview-avatar", document.getElementById('avatar-address').value, avatarImageSpec, "preview");
+        updateMyFollowsUI();
+    }
+
+    function saveSettings() {
+        myChat.content.nick = document.getElementById('nick').value
+        myChat.content.avatar = document.getElementById('avatar-address').value
+        myChat.content.bio = document.getElementById('bio').value
+
+        mySettings.unsavedChanges = true;   // Private settings
+        myChat.unsavedChanges = true;       // plus some public settings (public follows, nick, bio)
+
+        saveSettingsButton(false);
+    }
+
+    function saveChat() {
+        myChat.unsavedChanges = true;
+
+        saveFollowsButton(false)
+    }
+
+    function saveFollows() {
+        updatePublicFollows();
+        mySettings.unsavedChanges = true;   // Private settings
+        myChat.unsavedChanges = true;       // plus some public settings (public follows, nick, bio)
+
+        saveSettingsButton(false);
+        saveFollowsButton(false)
+    }
+
+    function addFollow() {
+        event.preventDefault(); // Prevent page reload
+        addToFollows(new ScratchChatter(document.getElementById('new-follow').value));
+        document.getElementById('new-follow').value = '';
+        addFollowButton(false);
+    }
+
+    function saveSettingsButton(enable) {
+        document.getElementById('save-settings-button').disabled = !enable;
+    }
+
+    function saveFollowsButton(enable) {
+        document.getElementById('save-follows-button').disabled = !enable;
+    }
+
+    function addFollowButton(enable) {
+        document.getElementById('add-follow-button').disabled = !enable;
+    }
+
+    function enableByClass(className, enable) {
+        var elements = document.getElementsByClassName(className);
+        for (var i = 0; i < elements.length; i++) {
+            if (elements[i].disabled == enable) {
+                elements[i].disabled = !enable;
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Utility Functions
+    ///////////////////////////////////////////////////////////////////////////
+
+    // Non-blocking pause for number of milliseconds
+    //
+    // Usage:
+    //  await delay(5000)
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    function setStatusMessage(message) {
+        document.getElementById('status-message').innerHTML = message;
+        document.getElementById('status-message').style.color = "black";
+    }
+
+    function setActivityMessage(message) {
+        activityStatusMessage = message;
+    }
+
+    function clearActivityMessage() {
+        activityStatusMessage = "";
+        clearStatusMessage();
+    }
+
+    function setStatusMessageProminance(colour) {
+        document.getElementById('status-message').style.color = colour;
+    }
+
+    function clearStatusMessage(message) {
+        document.getElementById('status-message').style.color = "#C9E4CA";
+
+        if (activityStatusMessage != "") {
+            setStatusMessage(activityStatusMessage);
+        }
+    }
+
+    function setMyAddress(address) {
+        document.getElementById('my-address').innerHTML = address;
+        myChat.content.claimedAddress = address;
+        myChat.content.unsavedChanges = true;
+    }
+
+    /** REF: https://ourcodeworld.com/articles/read/317/how-to-check-if-a-javascript-promise-has-been-fulfilled-rejected-or-resolved
+     *
+     * This function allow you to modify a JS Promise by adding some status properties.
+     * Based on: http://stackoverflow.com/questions/21485545/is-there-a-way-to-tell-if-an-es6-promise-is-fulfilled-rejected-resolved
+     * But modified according to the specs of promises : https://promisesaplus.com/
+     */
+    function MakeQuerablePromise(promise) {
+        // Don't modify any promise that has been already modified.
+        if (promise.isFulfilled) return promise;
+
+        // Set initial state
+        var isPending = true;
+        var isRejected = false;
+        var isFulfilled = false;
+
+        // Observe the promise, saving the fulfillment in a closure scope.
+        var result = promise.then(
+            function (v) {
+                isFulfilled = true;
+                isPending = false;
+                return v;
+            },
+            function (e) {
+                isRejected = true;
+                isPending = false;
+                throw e;
+            }
+        );
+
+        result.isFulfilled = function () { return isFulfilled; };
+        result.isPending = function () { return isPending; };
+        result.isRejected = function () { return isRejected; };
+        return result;
+    }
+</script>
+
+</html>
