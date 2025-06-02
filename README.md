@@ -1,3 +1,9 @@
+# This repository has moved
+
+This repository has been migrated from Microsoft Github to the EU based non-profit Codeberg.org where members have a say and contributors to Open Source software are not farmed like cattle.
+
+You will find this and my other repositories at https://codeberg.org/happybeing
+
 # ScratchChat
 
 **ScratchChat** is a secure, privacy max decentralised demo for chatting over the Autonomi peer-to-peer network. It's a bit like Twitter/X and other social media in that you only see things from people you follow, but the UI is more like a chat interface.
